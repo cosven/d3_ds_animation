@@ -6,6 +6,12 @@ import concat from "gulp-concat";
 import browserify from "browserify";
 
 
+gulp.task("css", () => {
+  gulp.src("./css/**/*.css")
+      .pipe(concat('all.css'))
+      .pipe(gulp.dest('./assert/'));
+});
+
 gulp.task("js", () => {
   console.log("task js run");
   browserify("./js/index.js", {debug: true})
@@ -14,7 +20,7 @@ gulp.task("js", () => {
     .pipe(fs.createWriteStream("./assert/all.js"));
 });
 
-gulp.task("default", ["js"], () => {
+gulp.task("default", ["css", "js"], () => {
   console.log("task default run");
-  return gulp.watch(["./js/**/*.js", "./css/**/*.css"], ["js"]);
+  return gulp.watch(["./js/**/*.js", "./css/**/*.css"], ["js", "css"]);
 });
