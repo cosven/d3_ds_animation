@@ -9,7 +9,7 @@ import browserify from "browserify";
 
 gulp.task("css", () => {
   gulp.src(["./css/**/*.css",
-            "./css/**/*.stylus"])
+            "./css/**/*.styl"])
       .pipe(stylus())
       .pipe(concat('all.css'))
       .pipe(gulp.dest('./assert/'));
