@@ -7,3 +7,7 @@ String.prototype.format = function() {
     ;
   });
 };
+
+export const print = (...args) => {
+  return console.log(...args);
+}
