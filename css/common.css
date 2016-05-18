@@ -1,15 +1,30 @@
-.axis path,
-.axis line {
-  fill: none;
-  stroke: black;
-  shape-rendering: crispEdges;
-}
- 
-.axis text {
-  font-family: sans-serif;
+body {
+    position: relative;
+      width: 960px;
+
 }
 
-.myText {
-  fill: white;
-  text-anchor: middle;
+svg {
+    font: 10px sans-serif;
+      shape-rendering: crispEdges;
+
+}
+
+rect {
+    fill: #ddd;
+
+}
+
+.axis path,
+.axis line {
+    fill: none;
+      stroke: #fff;
+
+}
+
+button {
+    position: absolute;
+      right: 30px;
+        top: 30px;
+
 }

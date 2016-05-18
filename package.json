@@ -12,6 +12,7 @@
     "browserify": "^13.0.0",
     "d3": "^3.5.12",
     "gulp-concat": "^2.6.0",
+    "gulp-stylus": "^2.3.1",
     "jquery": "^2.2.0"
   },
   "devDependencies": {
