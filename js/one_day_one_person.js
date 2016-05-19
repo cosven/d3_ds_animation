@@ -75,7 +75,7 @@ let main = (bodyClass) => {
   };
 
   let animation = () => {
-    timeScale.domain([new Date(2016, 1, 1, 1), new Date(2016, 1, 1, 10)]);
+    timeScale.domain([new Date(2016, 1, 1, 2), new Date(2016, 1, 1, 5)]);
     SVG.select('.axis')
       .transition().duration(5000).ease('linear')
       .call(timeAxis);
@@ -97,6 +97,10 @@ let main = (bodyClass) => {
         let cx = timeScale(d.timestamp);
         return cx;
       });
+    d3.select($(bodyClass)[0])
+      .style('background', 'white')
+      .transition().duration(5000).ease('linear')
+      .style('background', '#222');
   };
 
   let SVG = d3.select($(bodyClass)[0])
