@@ -1,7 +1,10 @@
+import $ from 'jquery';
+
+
 export let get_width = () => {
-  return 960;
+  return 1080;
 }
 
 export let get_height = () => {
-  return 600;
+  return $(window).height();
 }

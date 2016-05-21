@@ -4,57 +4,86 @@ import {get_width, get_height} from './consts';
 import {oneDayOnePersonData} from './data';
 
 
-let main = (bodyClass) => {
+class TimeAxisManager {
+  constructor(bodyClass) {
+    this.bodyClass = bodyClass;
+    this.wholeDay = [new Date(2016, 1, 1), new Date(2016, 1, 2)];
+    this.timeScale = d3.time.scale()
+      .domain(this.wholeDay)
+      .range([0, get_width() * 8 - 40]);
+    this.timeAxis = d3.svg.axis()
+      .scale(this.timeScale)
+      .ticks(d3.time.minute, 30)
+      .orient('bottom');
 
-  const margins = [20, 20, 20, 20];  // top, right, bottom, left
-  const eventsColor = d3.scale.category10();
+    // ... maybe unneeded
+    this._timeScale = d3.time.scale()
+      .domain(this.wholeDay)
+      .range([0, 1]);
+  }
 
-  let getEventColor = (event) => {
-    var color = 'blue';
-    switch (event.thing) {
+  colorTimeMap(colors, period){
+    let colorScale = d3.scale.linear()
+      .domain([0, 1])
+      .range(colors);
+    let start = this._timeScale(period[0]);
+    let end = this._timeScale(period[1]);
+    return [colorScale(start), colorScale(end)];
+  }
+}
+
+let getEventColor = (event) => {
+  const eventsColor = d3.scale.category10().domain(d3.range(0, 10));
+  let color = eventsColor(0);
+
+  switch (event.thing) {
     case 'whether':
       color = eventsColor(0);
       break;
     case 'music':
       color = eventsColor(1);
       break;
-    default:
+    case 'story':
       color = eventsColor(2);
-    }
-    return color;
-  };
+      break;
+    case 'wiki':
+      color = eventsColor(3);
+      break;
+    case 'message':
+      color = eventsColor(4);
+      break;
+    default:
+      color = eventsColor(5);
+  }
+  return color;
+};
 
-  let timeScale = d3.time.scale()
-    .domain([new Date(2016, 1, 1), new Date(2016, 1, 2)])
-    .range([0, get_width() - 40]);
+
+let main = (bodyClass) => {
+
+  const margins = [20, 20, 20, 20];  // top, right, bottom, left
+  let axisPos = [0, get_height() / 2];  // x, y
+  let axisTransform = [0 - 7 * get_width(), axisPos[1]];
+
+  let manager = new TimeAxisManager();
+  let bubbleData = {name: 'music', children: []};
 
   let timeAxisZoomed = () => {
-    SVG.select('.axis').call(timeAxis);
+    SVG.select('.axis').call(manager.timeAxis);
     pointGroup.selectAll('circle')
       .data(oneDayOnePersonData.events)
       .attr('cx', (d, i) => {
-        return timeScale(d.timestamp);
+        return manager.timeScale(d.timestamp);
       });
   };
 
   let timeAxisZoom = d3.behavior.zoom()
-    .x(timeScale)
+    .x(manager.timeScale)
     .scaleExtent([1, Infinity])
     .on('zoom', timeAxisZoomed);
 
-  let timeAxis = d3.svg.axis()
-    .scale(timeScale)
-    .orient('bottom');
-
-  let initTimeAxis = () => {
-    timeAxisZoom.x(timeScale.domain([new Date(2016, 1, 1, 0), new Date(2016, 1, 1, 3)]));
-    timeAxisZoomed();
-  };
-
   let loadData = (data=oneDayOnePersonData) => {
     let events = data.events;
-
-    // draw points
 
     pointGroup.selectAll('circle')
       .data(events)
@@ -64,43 +93,99 @@ let main = (bodyClass) => {
         return getEventColor(d);
       })
       .attr('cx', (d, i) => {
-        return timeScale(d.timestamp);
+        return manager.timeScale(d.timestamp);
       })
-      .attr('cy', -2)
-      .attr('r', 5)
+      .attr('cy', 0)
+      .attr('r', 6)
       .append('title')
       .text((d, i) => {
         return d.thing;
       });
   };
 
+  let addBubblePoint = (e) => {
+    bubbleData.children.push(e);
+    console.log(bubbleData);
+    let node = bubblePointGroup.selectAll('.node')
+      .data(bubble.nodes(bubbleData));
+
+    node.enter()
+      .append('g')
+      .attr('class', 'node')
+      .attr('transform', (d) => {
+        return 'translate({0}, {1})'.format(get_width()/2, 0);
+      })
+      .append('circle')
+      .attr('r', (d) => {return d.r;})
+      .style('fill', (d) => {
+        return getEventColor(d);
+      });
+    node.append('title')
+      .text((d) => {
+        return d.thing;
+      });
+    node.append('text')
+      .style('text-anchor', 'middle')
+      .text((d) => {
+        return d.detail;
+      });
+    node.transition()
+      .duration(1000)
+      .attr('transform', (d) => {
+        return 'translate({0}, {1})'.format(d.x, d.y);
+      });
+    node.select('circle')
+      .transition()
+      .duration(1000)
+      .attr('r', (d) => { return d.r; });
+  };
+
   let animation = () => {
-    timeScale.domain([new Date(2016, 1, 1, 2), new Date(2016, 1, 1, 5)]);
+    const duration = 50000;
+    const easeType = 'linear';
+
+    let timePeriod = [new Date(2016, 1, 1, 1), new Date(2016, 1, 1, 24)];
+    let colors = ['white', '#222'];
+    let textColors = [...colors].reverse();
+    let colorRange = manager.colorTimeMap(colors, timePeriod);
+    let textColorRange = manager.colorTimeMap(textColors, timePeriod)
+    // manager.timeScale.domain(timePeriod);
+
     SVG.select('.axis')
-      .transition().duration(5000).ease('linear')
-      .call(timeAxis);
+      .style({'stroke': textColorRange[0], 'fill': textColorRange[0]})
+      .transition().duration(duration).ease(easeType)
+      .attr('transform', 'translate({0}, {1})'.format(axisTransform[0], axisTransform[1]))
+      .style({'stroke': textColorRange[1], 'fill': textColorRange[1]})
+      .call(manager.timeAxis);
+
     pointGroup.selectAll('circle')
       .data(oneDayOnePersonData.events)
       .attr('flag', 'false')  // automatic convert to string
-      .transition().duration(5000).ease('linear')
+      .transition().duration(duration).ease('linear')
+      .attr('transform', 'translate({0}, {1})'.format(axisTransform[0], 0))
       .tween('progress', (d, i) => {
         let ele = pointGroup.selectAll('circle')[0][i];
         return () => {
           let cx = ele.attributes.cx.value;
-          if ((cx <= get_width() / 2) && ele.attributes.flag.value == 'false'){
+          let t = d3.transform(d3.select(ele).attr('transform'));
+          let x = t.translate[0];
+          if ((cx <= get_width() / 2 - x) && ele.attributes.flag.value == 'false'){
             d3.select(ele).attr('flag', 'true');
-            console.log(d.detail);
+            console.log('bubble point', d.detail);
+            addBubblePoint(d);
           }
         };
       })
       .attr('cx', (d, i) => {
-        let cx = timeScale(d.timestamp);
+        let cx = manager.timeScale(d.timestamp);
+        console.log(cx);
         return cx;
       });
+
     d3.select($(bodyClass)[0])
-      .style('background', 'white')
-      .transition().duration(5000).ease('linear')
-      .style('background', '#222');
+      .style('background', colorRange[0])
+      .transition().duration(duration).ease(easeType)
+      .style('background', colorRange[1]);
   };
 
   let SVG = d3.select($(bodyClass)[0])
@@ -110,18 +195,32 @@ let main = (bodyClass) => {
     .call(timeAxisZoom);
 
   let pointGroup = SVG.append('g')
-        .attr('class', 'time-event-point')
-        .attr('transform', 'translate({0}, {1})'.format(margins[3], get_height()/2 - margins[2]));
+    .attr('class', 'event-point')
+    .attr('transform', 'translate({0}, {1})'.format(margins[3], axisPos[1]));
+
+  let bubblePointGroup = SVG.append('g')
+    .attr('class', 'bubble-group')
+    .attr('transform', 'translate({0}, {1})'.format(margins[3], get_height()/2))
+    .attr('width', 300)
+    .attr('height', 300);
+
+  let bubble = d3.layout.pack()
+    .sort(null)
+    .size([200, 200])
+    .value((d) => {
+      return d.size;
+    })
+    .padding(2);
 
   SVG.append('g')
     .attr('class', 'axis')
     .attr('transform', 'translate({0}, {1})'.format(
-          margins[3], get_height()/2 - margins[2]))
-    .call(timeAxis);
+          margins[3], axisPos[1]))
+    .call(manager.timeAxis);
 
-  initTimeAxis();
   loadData();
   animation();
+
 };
 
 $(() => {
