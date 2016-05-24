@@ -2,7 +2,8 @@ import $ from "jquery";
 import d3 from "d3";
 import * as utils from "./utils";
 import {test_string_format} from "./tests";
-import * as oneDayOnePerson from "./one_day_one_person.js";
+import * as oneDayOnePerson from "./one_day_one_person";
+import * as oneDayMultiPerson from "./one_day_multi_person";
 
 let main = (bodyClass) => {
 

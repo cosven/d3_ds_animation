@@ -8,6 +8,7 @@ import browserify from "browserify";
 
 
 gulp.task("css", () => {
+  console.log("task css run");
   gulp.src(["./css/**/*.css",
             "./css/**/*.styl"])
       .pipe(stylus())
@@ -25,5 +26,7 @@ gulp.task("js", () => {
 
 gulp.task("default", ["css", "js"], () => {
   console.log("task default run");
-  return gulp.watch(["./js/**/*.js", "./css/**/*.css"], ["js", "css"]);
+  return gulp.watch(["./js/**/*.js",
+                    "./css/**/*.css",
+                    "./css/**/*.styl"], ["js", "css"]);
 });

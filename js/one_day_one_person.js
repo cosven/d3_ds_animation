@@ -116,10 +116,17 @@ let main = (bodyClass) => {
         .append('g')
         .attr('class', className)
         .attr('transform', (d) => {
-          return 'translate({0}, {1})'.format(get_width()/2, -1 * bpgAxisHMargin);
+          return 'translate({0}, {1})'
+              .format(get_width()/2, -1 * bpgAxisHMargin);
         })
         .append('circle')
         .attr('r', (d) => {return 6;})
+        .style('fill-opacity', (d) => {
+            if (d.size) {
+                return 0.8;
+            }
+            return 0;
+        })
         .style('fill', (d) => {
           return getEventColor(d);
         });
@@ -127,11 +134,11 @@ let main = (bodyClass) => {
         .text((d) => {
           return d.detail;
         });
-      node.append('text')
-        .style('text-anchor', 'middle')
-        .text((d) => {
-          return d.detail;
-        });
+      // node.append('text')
+      //   .style('text-anchor', 'middle')
+      //   .text((d) => {
+      //     return d.detail;
+      //   });
       node.transition()
         .duration(1000)
         .attr('transform', (d) => {
@@ -195,7 +202,8 @@ let main = (bodyClass) => {
     SVG.select('.axis')
       .style({'stroke': textColorRange[0], 'fill': textColorRange[0]})
       .transition().duration(duration).ease(easeType)
-      .attr('transform', 'translate({0}, {1})'.format(axisTransform[0], axisTransform[1]))
+      .attr('transform', 'translate({0}, {1})'
+        .format(axisTransform[0], axisTransform[1]))
       .style({'stroke': textColorRange[1], 'fill': textColorRange[1]})
       .call(manager.timeAxis);
 
