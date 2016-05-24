@@ -1,3 +1,0 @@
-let l:bm_file_version = 1
-let l:bm_sessions = {'default': {'/home/cosven/code/d3_ds_animation/js/one_day_one_person.js': [{'sign_idx': 9505, 'line_nr': 207, 'content': '  let bubble = d3.layout.pack()'},],}}
-let l:bm_current_session = 'default'

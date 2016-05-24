@@ -64,9 +64,17 @@ let main = (bodyClass) => {
   const margins = [20, 20, 20, 20];  // top, right, bottom, left
   let axisPos = [0, get_height() / 2];  // x, y
   let axisTransform = [0 - 7 * get_width(), axisPos[1]];
+  let bpgAxisHMargin = 100;
+
+  let bpgWidth = 300;
+  let bpgHeight = 300;
+  let bpgPosX = margins[3];
+  let bpgPosXD = margins[3];
+  let bpgPosY = get_height() / 2;
 
   let manager = new TimeAxisManager();
-  let bubbleData = {name: 'music', children: []};
+  let bpgOneData = {name: 'music', children: []};
+  let bpgTwoData = {name: 'music', children: []};
 
   let timeAxisZoomed = () => {
     SVG.select('.axis').call(manager.timeAxis);
@@ -83,10 +91,8 @@ let main = (bodyClass) => {
     .on('zoom', timeAxisZoomed);
 
   let loadData = (data=oneDayOnePersonData) => {
-    let events = data.events;
-
     pointGroup.selectAll('circle')
-      .data(events)
+      .data(data.events)
       .enter()
       .append('circle')
       .attr('fill', (d, i) => {
@@ -104,40 +110,75 @@ let main = (bodyClass) => {
   };
 
   let addBubblePoint = (e) => {
-    bubbleData.children.push(e);
-    console.log(bubbleData);
-    let node = bubblePointGroup.selectAll('.node')
-      .data(bubble.nodes(bubbleData));
 
-    node.enter()
-      .append('g')
-      .attr('class', 'node')
-      .attr('transform', (d) => {
-        return 'translate({0}, {1})'.format(get_width()/2, 0);
-      })
-      .append('circle')
-      .attr('r', (d) => {return d.r;})
-      .style('fill', (d) => {
-        return getEventColor(d);
-      });
-    node.append('title')
-      .text((d) => {
-        return d.thing;
-      });
-    node.append('text')
-      .style('text-anchor', 'middle')
-      .text((d) => {
-        return d.detail;
-      });
-    node.transition()
-      .duration(1000)
-      .attr('transform', (d) => {
-        return 'translate({0}, {1})'.format(d.x, d.y);
-      });
-    node.select('circle')
-      .transition()
-      .duration(1000)
-      .attr('r', (d) => { return d.r; });
+    let _addBubblePoint = (node, className) => {
+      node.enter()
+        .append('g')
+        .attr('class', className)
+        .attr('transform', (d) => {
+          return 'translate({0}, {1})'.format(get_width()/2, -1 * bpgAxisHMargin);
+        })
+        .append('circle')
+        .attr('r', (d) => {return 6;})
+        .style('fill', (d) => {
+          return getEventColor(d);
+        });
+      node.append('title')
+        .text((d) => {
+          return d.detail;
+        });
+      node.append('text')
+        .style('text-anchor', 'middle')
+        .text((d) => {
+          return d.detail;
+        });
+      node.transition()
+        .duration(1000)
+        .attr('transform', (d) => {
+          return 'translate({0}, {1})'.format(d.x, d.y);
+        });
+      node.select('circle')
+        .transition()
+        .duration(1000)
+        .attr('r', (d) => { return d.r; });
+    }
+
+    let addBubblePointToOne = (e) => {
+      let className = 'node-one';
+      bpgOneData.children.push(e);
+      let node = bubblePointGroupOne.selectAll('.' + className)
+        .data(bubbleOne.nodes(bpgOneData));
+      _addBubblePoint(node, className);
+    }
+
+    let addBubblePointToTwo = (e) => {
+      let className = 'node-two';
+      bpgTwoData.children.push(e);
+      let node = bubblePointGroupTwo.selectAll('.' + className)
+        .data(bubbleOne.nodes(bpgTwoData));
+      _addBubblePoint(node, className);
+    }
+   
+    switch (e.thing) {
+      case 'whether':
+        addBubblePointToOne(e);
+        break;
+      case 'music':
+        addBubblePointToTwo(e);
+        break;
+      case 'story':
+        addBubblePointToOne(e);
+        break;
+      case 'wiki':
+        addBubblePointToTwo(e);
+        break;
+      case 'message':
+        addBubblePointToOne(e);
+        break;
+      default:
+        addBubblePointToOne(e);
+    }
+
   };
 
   let animation = () => {
@@ -198,13 +239,28 @@ let main = (bodyClass) => {
     .attr('class', 'event-point')
     .attr('transform', 'translate({0}, {1})'.format(margins[3], axisPos[1]));
 
-  let bubblePointGroup = SVG.append('g')
+  let bubblePointGroupOne = SVG.append('g')
     .attr('class', 'bubble-group')
-    .attr('transform', 'translate({0}, {1})'.format(margins[3], get_height()/2))
-    .attr('width', 300)
-    .attr('height', 300);
+    .attr('transform', 'translate({0}, {1})'.format(bpgPosX, get_height()/2 + bpgAxisHMargin))
+    .attr('width', bpgWidth)
+    .attr('height', bpgHeight);
 
-  let bubble = d3.layout.pack()
+  let bubblePointGroupTwo = SVG.append('g')
+    .attr('class', 'bubble-group')
+    .attr('transform', 'translate({0}, {1})'
+          .format(bpgPosX + bpgPosXD + bpgWidth, get_height()/ 2 + bpgAxisHMargin))
+    .attr('width', bpgWidth)
+    .attr('height', bpgHeight);
+
+  let bubbleOne = d3.layout.pack()
+    .sort(null)
+    .size([200, 200])
+    .value((d) => {
+      return d.size;
+    })
+    .padding(2);
+
+  let bubbleTwo = d3.layout.pack()
     .sort(null)
     .size([200, 200])
     .value((d) => {
