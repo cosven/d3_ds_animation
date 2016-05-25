@@ -14,17 +14,39 @@ class Axis {
           .domain(this.wholeDay)
           .range([0, this.xWidth]);
 
+        this._yScale = null;
+
         this.xAxis = d3.svg.axis()
           .scale(this.xScale)
           .ticks(d3.time.hour, 1)
           .orient('bottom');
     }
+
+    yScale(persons) {
+      let index = d3.range(0, persons.length);
+      let ordinal = d3.scale.ordinal()
+        .domain(index)
+        .range(persons);
+      this._yScale = ordinal;
+      return this._yScalea;
+    }
 }
 
 
 let main = (bodyClass) => {
-};
+  let width = 960;
+  let height = 400;
 
+  let axis = new Axis(bodyClass);
+  
+  let SVG = d3.select($(bodyClass)[0])
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height);
+
+  SVG.append('g')
+    .attr('class', 'axis-odmp')
+};
 
 $(() => {
   const bodyClass = '.' + 'oneDayMultiPerson';
