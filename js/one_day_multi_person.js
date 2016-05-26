@@ -1,7 +1,6 @@
 import $ from "jquery";
 import d3 from 'd3';
 // import * as timepicker from './jquery.timepicker'
-import * as ui from 'jquery-ui'
 import {get_width, get_height} from './consts';
 import {oneDayMultiPersonData} from './data';
 import {getEventColor} from './utils'
