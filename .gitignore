@@ -4,3 +4,4 @@ assert/
 *.out
 *.swo
 *.xls
+*.json
