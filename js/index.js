@@ -5,6 +5,10 @@ import {test_string_format} from "./tests";
 import * as oneDayOnePerson from "./one_day_one_person";
 import * as oneDayMultiPerson from "./one_day_multi_person";
 
+window.$ = $;
+window.jQuery = $;
+
+
 let main = (bodyClass) => {
 
   test_string_format();

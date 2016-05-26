@@ -10,10 +10,19 @@ import browserify from "browserify";
 gulp.task("css", () => {
   console.log("task css run");
   gulp.src(["./css/**/*.css",
-            "./css/**/*.styl"])
+            "./css/**/*.styl",
+            "./node_modules/jquery-ui/themes/ui-darkness/jquery-ui.css"])
       .pipe(stylus())
       .pipe(concat('all.css'))
       .pipe(gulp.dest('./assert/'));
+});
+
+gulp.task("img", () => {
+  console.log("task img run");
+  gulp.src(['./node_modules/jquery-ui/themes/ui-darkness/images/*.*',],
+           {base: './node_modules/jquery-ui/themes/ui-darkness/'})
+    .pipe(gulp.dest('./assert/'));
+
 });
 
 gulp.task("js", () => {
@@ -24,7 +33,7 @@ gulp.task("js", () => {
     .pipe(fs.createWriteStream("./assert/all.js"));
 });
 
-gulp.task("default", ["css", "js"], () => {
+gulp.task("default", ["css", "js", "img"], () => {
   console.log("task default run");
   return gulp.watch(["./js/**/*.js",
                     "./css/**/*.css",

@@ -2,6 +2,7 @@ import $ from "jquery";
 import d3 from 'd3';
 import {get_width, get_height} from './consts';
 import {oneDayOnePersonData} from './data';
+import {getEventColor} from './utils'
 
 
 class TimeAxisManager {
@@ -31,32 +32,6 @@ class TimeAxisManager {
     return [colorScale(start), colorScale(end)];
   }
 }
-
-let getEventColor = (event) => {
-  const eventsColor = d3.scale.category10().domain(d3.range(0, 10));
-  let color = eventsColor(0);
-
-  switch (event.thing) {
-    case 'whether':
-      color = eventsColor(0);
-      break;
-    case 'music':
-      color = eventsColor(1);
-      break;
-    case 'story':
-      color = eventsColor(2);
-      break;
-    case 'wiki':
-      color = eventsColor(3);
-      break;
-    case 'message':
-      color = eventsColor(4);
-      break;
-    default:
-      color = eventsColor(5);
-  }
-  return color;
-};
 
 
 let main = (bodyClass) => {
