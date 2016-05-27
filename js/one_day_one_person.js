@@ -107,8 +107,11 @@ let main = (bodyClass) => {
         })
         .append('circle')
         .attr('r', (d) => {return 6;})
-        .style('fill-opacity', (d) => {
-            return 0.8;
+        .style('fill-opacity', (d, i) => {
+            if (i==0)
+                return 0;
+            return 1;
+
         })
         .style('fill', (d) => {
           return getEventColor(d);
@@ -122,11 +125,11 @@ let main = (bodyClass) => {
       //   .text((d) => {
       //     return d.asr_text;
       //   });
-      // node.transition()
-      //   .duration(1000)
-      //   .attr('transform', (d) => {
-      //     return 'translate({0}, {1})'.format(d.x, d.y);
-      //   });
+      node.transition()
+        .duration(1000)
+        .attr('transform', (d) => {
+          return 'translate({0}, {1})'.format(d.x, d.y);
+        });
       node.select('circle')
         .transition()
         .duration(1000)
@@ -192,24 +195,24 @@ let main = (bodyClass) => {
     pointGroup.selectAll('circle')
       .data(oneDayOnePersonData.records)
       .attr('flag', 'false')  // automatic convert to string
-      .transition().duration(duration).ease('linear')
-      .attr('transform', 'translate({0}, {1})'.format(axisTransform[0], 0))
-      .tween('progress', (d, i) => {
-        let ele = pointGroup.selectAll('circle')[0][i];
-        return () => {
-          let cx = ele.attributes.cx.value;
-          let t = d3.transform(d3.select(ele).attr('transform'));
-          let x = t.translate[0];
-          if ((cx <= get_width() / 2 - x) && ele.attributes.flag.value == 'false'){
-            d3.select(ele).attr('flag', 'true');
-            console.log('bubble point', d.asr_text);
-            // addBubblePoint(d);
-          }
-        };
-      })
       .attr('cx', (d, i) => {
         let cx = manager.timeScale(str_to_date(d.timestamp));
-        return cx;
+            return cx;
+      })
+      .transition().duration(duration).ease('linear')
+      // .attr('transform', 'translate({0}, {1})'.format(axisTransform[0], 0))
+      .attrTween('transform', function(d, i){
+        let ele = d3.select(this);
+        let cx = ele.attr('cx');
+        return (tick) => {
+          let x = axisTransform[0] * tick;
+          if ((cx <= get_width() / 2 - x) && ele.attr('flag') == 'false'){
+            ele.attr('flag', 'true');
+            // console.log('bubble point', d.asr_text);
+            addBubblePoint(d);
+          }
+          return 'translate({0}, 0)'.format(x);
+        };
       });
 
     d3.select($(bodyClass)[0])

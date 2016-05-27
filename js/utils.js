@@ -16,7 +16,7 @@ export let getEventColor = (event) => {
   const eventsColor = d3.scale.category10().domain(d3.range(0, 10));
   let color = eventsColor(0);
 
-  switch (event.thing) {
+  switch (event.rec_type) {
     case 'unknown':
       color = eventsColor(0);
       break;
