@@ -1,6 +1,5 @@
 import $ from "jquery";
 import d3 from 'd3';
-// import * as timepicker from './jquery.timepicker'
 import {get_width, get_height} from './consts';
 import {access_data} from './data_access';
 import {getEventColor, str_to_date} from './utils';

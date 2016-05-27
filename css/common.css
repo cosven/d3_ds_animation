@@ -24,7 +24,15 @@ circle {
   stroke: #CCC;
 }
 
-.axis-odmp text {
+.axis-mdop-y path, .axis-mdop-y line,
+.axis-mdop-x path, .axis-mdop-x line {
+  fill: none;
+  stroke: #CCC;
+}
+
+.axis-odmp text,
+.axis-mdop-x text,
+.axis-mdop-y text {
   font-family: Monaco, "Ubuntu Mono";
   font-size: 12px;
   fill: #CCC;
