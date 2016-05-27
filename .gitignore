@@ -5,3 +5,4 @@ assert/
 *.swo
 *.xls
 *.json
+.vim-bookmarks

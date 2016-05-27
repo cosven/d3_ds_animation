@@ -1,14 +1,14 @@
 import $ from "jquery";
 import d3 from 'd3';
 import {get_width, get_height} from './consts';
-import {oneDayOnePersonData} from './data';
-import {getEventColor} from './utils'
+import {getEventColor, str_to_date} from './utils';
+import {access_data} from './data_access';
 
 
 class TimeAxisManager {
   constructor(bodyClass) {
     this.bodyClass = bodyClass;
-    this.wholeDay = [new Date(2016, 1, 1), new Date(2016, 1, 2)];
+    this.wholeDay = [new Date(2016, 5, 11), new Date(2016, 5, 12)];
     this.timeScale = d3.time.scale()
       .domain(this.wholeDay)
       .range([0, get_width() * 8 - 40]);
@@ -51,12 +51,24 @@ let main = (bodyClass) => {
   let bpgOneData = {name: 'music', children: []};
   let bpgTwoData = {name: 'music', children: []};
 
+  let oneDayOnePersonData = null;
+
+  let getData = () => {
+    if (oneDayOnePersonData)
+      return oneDayOnePersonData;
+    else {
+      console.log('.......error........');
+      return oneDayOnePersonData;
+    }
+  }
+
   let timeAxisZoomed = () => {
+    let data = getData();
     SVG.select('.axis').call(manager.timeAxis);
     pointGroup.selectAll('circle')
-      .data(oneDayOnePersonData.events)
+      .data(oneDayOnePersonData.records)
       .attr('cx', (d, i) => {
-        return manager.timeScale(d.timestamp);
+        return manager.timeScale(str_to_date(d.timestamp));
       });
   };
 
@@ -65,27 +77,26 @@ let main = (bodyClass) => {
     .scaleExtent([1, Infinity])
     .on('zoom', timeAxisZoomed);
 
-  let loadData = (data=oneDayOnePersonData) => {
+  let loadData = (data) => {
     pointGroup.selectAll('circle')
-      .data(data.events)
+      .data(data.records)
       .enter()
       .append('circle')
       .attr('fill', (d, i) => {
         return getEventColor(d);
       })
       .attr('cx', (d, i) => {
-        return manager.timeScale(d.timestamp);
+        return manager.timeScale(str_to_date(d.timestamp));
       })
       .attr('cy', 0)
       .attr('r', 6)
       .append('title')
       .text((d, i) => {
-        return d.thing;
+        return d.rec_type;
       });
   };
 
   let addBubblePoint = (e) => {
-
     let _addBubblePoint = (node, className) => {
       node.enter()
         .append('g')
@@ -97,28 +108,25 @@ let main = (bodyClass) => {
         .append('circle')
         .attr('r', (d) => {return 6;})
         .style('fill-opacity', (d) => {
-            if (d.size) {
-                return 0.8;
-            }
-            return 0;
+            return 0.8;
         })
         .style('fill', (d) => {
           return getEventColor(d);
         });
       node.append('title')
         .text((d) => {
-          return d.detail;
+          return d.asr_text;
         });
       // node.append('text')
       //   .style('text-anchor', 'middle')
       //   .text((d) => {
-      //     return d.detail;
+      //     return d.asr_text;
       //   });
-      node.transition()
-        .duration(1000)
-        .attr('transform', (d) => {
-          return 'translate({0}, {1})'.format(d.x, d.y);
-        });
+      // node.transition()
+      //   .duration(1000)
+      //   .attr('transform', (d) => {
+      //     return 'translate({0}, {1})'.format(d.x, d.y);
+      //   });
       node.select('circle')
         .transition()
         .duration(1000)
@@ -141,14 +149,14 @@ let main = (bodyClass) => {
       _addBubblePoint(node, className);
     }
    
-    switch (e.thing) {
+    switch (e.rec_type) {
       case 'whether':
         addBubblePointToOne(e);
         break;
-      case 'music':
+      case 'play':
         addBubblePointToTwo(e);
         break;
-      case 'story':
+      case 'current_time':
         addBubblePointToOne(e);
         break;
       case 'wiki':
@@ -160,14 +168,13 @@ let main = (bodyClass) => {
       default:
         addBubblePointToOne(e);
     }
-
   };
 
   let animation = () => {
     const duration = 50000;
     const easeType = 'linear';
 
-    let timePeriod = [new Date(2016, 1, 1, 1), new Date(2016, 1, 1, 24)];
+    let timePeriod = [new Date(2016, 5, 11), new Date(2016, 5, 12)];
     let colors = ['white', '#222'];
     let textColors = [...colors].reverse();
     let colorRange = manager.colorTimeMap(colors, timePeriod);
@@ -183,7 +190,7 @@ let main = (bodyClass) => {
       .call(manager.timeAxis);
 
     pointGroup.selectAll('circle')
-      .data(oneDayOnePersonData.events)
+      .data(oneDayOnePersonData.records)
       .attr('flag', 'false')  // automatic convert to string
       .transition().duration(duration).ease('linear')
       .attr('transform', 'translate({0}, {1})'.format(axisTransform[0], 0))
@@ -195,14 +202,13 @@ let main = (bodyClass) => {
           let x = t.translate[0];
           if ((cx <= get_width() / 2 - x) && ele.attributes.flag.value == 'false'){
             d3.select(ele).attr('flag', 'true');
-            console.log('bubble point', d.detail);
-            addBubblePoint(d);
+            console.log('bubble point', d.asr_text);
+            // addBubblePoint(d);
           }
         };
       })
       .attr('cx', (d, i) => {
-        let cx = manager.timeScale(d.timestamp);
-        console.log(cx);
+        let cx = manager.timeScale(str_to_date(d.timestamp));
         return cx;
       });
 
@@ -210,6 +216,8 @@ let main = (bodyClass) => {
       .style('background', colorRange[0])
       .transition().duration(duration).ease(easeType)
       .style('background', colorRange[1]);
+
+    console.log('animation finished');
   };
 
   let SVG = d3.select($(bodyClass)[0])
@@ -239,7 +247,7 @@ let main = (bodyClass) => {
     .sort(null)
     .size([200, 200])
     .value((d) => {
-      return d.size;
+      return 2;
     })
     .padding(2);
 
@@ -247,7 +255,7 @@ let main = (bodyClass) => {
     .sort(null)
     .size([200, 200])
     .value((d) => {
-      return d.size;
+      return 2;
     })
     .padding(2);
 
@@ -256,10 +264,14 @@ let main = (bodyClass) => {
     .attr('transform', 'translate({0}, {1})'.format(
           margins[3], axisPos[1]))
     .call(manager.timeAxis);
+  
+  let tmp = (data) => {
+    oneDayOnePersonData = data;
+    loadData(data);
+    animation();
+  };
 
-  loadData();
-  animation();
-
+  access_data('010116000240.json', tmp);
 };
 
 $(() => {

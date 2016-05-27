@@ -17,19 +17,22 @@ export let getEventColor = (event) => {
   let color = eventsColor(0);
 
   switch (event.thing) {
-    case 'whether':
+    case 'unknown':
       color = eventsColor(0);
       break;
-    case 'music':
+    case 'play_random':
+    case 'play':
+    case 'play_hot_radio':
       color = eventsColor(1);
       break;
-    case 'story':
+    case 'current_time':
       color = eventsColor(2);
       break;
-    case 'wiki':
+    case 'query':
+    case 'query-alarm':
       color = eventsColor(3);
       break;
-    case 'message':
+    case 'chat':
       color = eventsColor(4);
       break;
     default:
@@ -38,3 +41,17 @@ export let getEventColor = (event) => {
   return color;
 };
 
+
+export let str_to_date = (str) => {
+    let s_s = str.split(' ');
+    let ymd = s_s[0].split('-');
+    let hms = s_s[1].split(':');
+    let year = parseInt(ymd[0]);
+    let month = parseInt(ymd[1]);
+    let day = parseInt(ymd[2]);
+    let hour = parseInt(hms[0]);
+    let minute = parseInt(hms[1]);
+    let seconds = parseInt(hms[2]);
+    let date = new Date(year, month, day, hour, minute, seconds);
+    return date;
+}

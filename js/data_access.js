@@ -2,14 +2,20 @@ import d3 from "d3";
 import $ from "jquery";
 
 
-let access_xls = (filename) => {
-    return {};
+export let access_data = (filename, callback) => {
+  d3.json('datas/' + filename, (error, data) => {
+    if (error) {
+      console.log('read json error');
+    }
+    else {
+      callback(data);
+    }
+  });
 };
 
 
 $(() => {
-    console.log('.......test..........');
-    let result = access_xls('./datas/speech_log - 010116000240');
-    console.log(result);
-    console.log('...test finished....')
+    // console.log('.......test..........');
+    // access_data('010116000240.json');
+    // console.log('...test finished....')
 });

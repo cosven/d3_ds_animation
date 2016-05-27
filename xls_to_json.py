@@ -11,14 +11,10 @@ DIRNAME = 'datas/'
 
 def get_files():
     fs = os.listdir(DIRNAME)
-    for f in fs:
-        if not f.endswith('.xls'):
-            fs.remove(f)
-    return fs
+    return (x for x in fs if x.endswith('.xls'))
 
 
 def xls_to_json(f_path):
-    print('accessing %s' % f_path)
     xl_workbook = xlrd.open_workbook(f_path)
     sheet_name = xl_workbook.sheet_names()[0]
     sheet = xl_workbook.sheet_by_name(sheet_name)
@@ -39,12 +35,11 @@ def xls_to_json(f_path):
 
 def main():
     files = get_files()
-    print('detect %d xls files' % len(files))
     for f in files:
         print('accessing %s ....' % f)
         f_path = DIRNAME + f
         d = xls_to_json(f_path)
-        f_json = DIRNAME + f.split('.')[0] + '.json'
+        f_json = DIRNAME + f.split('.')[0].split('－')[1] + '.json'
         with open(f_json, 'w') as f_j:
             json.dump(d, f_j, indent=4)
 
