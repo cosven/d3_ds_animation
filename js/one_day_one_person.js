@@ -8,7 +8,7 @@ import {access_data} from './data_access';
 class TimeAxisManager {
   constructor(bodyClass) {
     this.bodyClass = bodyClass;
-    this.wholeDay = [new Date(2016, 5, 11), new Date(2016, 5, 12)];
+    this.wholeDay = [new Date(2016, 5-1, 11), new Date(2016, 5-1, 12)];
     this.timeScale = d3.time.scale()
       .domain(this.wholeDay)
       .range([0, get_width() * 8 - 40]);
@@ -177,7 +177,7 @@ let main = (bodyClass) => {
     const duration = 50000;
     const easeType = 'linear';
 
-    let timePeriod = [new Date(2016, 5, 11), new Date(2016, 5, 12)];
+    let timePeriod = [new Date(2016, 5-1, 11), new Date(2016, 5-1, 12)];
     let colors = ['white', '#222'];
     let textColors = [...colors].reverse();
     let colorRange = manager.colorTimeMap(colors, timePeriod);

@@ -8,7 +8,7 @@ import {getEventColor, str_to_date} from './utils';
 class Axis {
     constructor(bodyClass) {
       this.bodyClass = bodyClass;
-      this.wholeDay = [new Date(2016, 5, 11), new Date(2016, 5, 12)];
+      this.wholeDay = [new Date(2016, 5-1, 11), new Date(2016, 5-1, 12)];
 
       this.xWidth = 960;
 
@@ -173,10 +173,10 @@ let main = (bodyClass) => {
 
   $('.datepick').datepicker({
     dateFormat: "yy-mm-dd",
-    minDate: new Date(2016, 1 - 1, 1),
-    maxDate: new Date(2016, 2 - 1, 1)
+    minDate: new Date(2016, 5 - 1, 0),
+    maxDate: new Date(2016, 5 - 1, 30)
   });
-  $('.datepick').datepicker('setDate', new Date(2016, 1 - 1, 1));
+  $('.datepick').datepicker('setDate', new Date(2016, 5 - 1, 1));
 };
 
 $(() => {
