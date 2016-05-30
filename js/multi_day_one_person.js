@@ -61,11 +61,21 @@ let main = (bodyClass) => {
           .format(axisXPos.x, axisXPos.y))
     .call(axis.xAxis);
 
+  SVG.append('text')
+    .attr('transform', 'translate({0}, {1})'
+          .format(axisXPos.x + axis.xWidth + 10, axisXPos.y))
+    .text('时间');
+
   SVG.append('g')
     .attr('class', 'axis-mdop-y')
     .attr('transform', 'translate({0}, {1})'
           .format(axisYPos.x, axisYPos.y))
     .call(axis.yAxis);
+
+  SVG.append('text')
+    .attr('transform', 'translate({0}, {1})'
+          .format(axisYPos.x-10, axisYPos.y-10))
+    .text('操作次数');
 
   let colorSigns = SVG.append('g')
     .attr('class', 'color-signs')
@@ -97,7 +107,7 @@ let main = (bodyClass) => {
     .text((d) => {
       return d;
     })
-    .attr('fill', '#CCC');
+    .attr('fill', '#222');
 
   let loadData = (data) => {
     let index = 0;
