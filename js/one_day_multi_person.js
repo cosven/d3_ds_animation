@@ -130,22 +130,6 @@ let main = (bodyClass) => {
       xAxisZoom.on('zoom', () => {
         let _axis = SVG.select('.axis-odmp');
         _axis.call(axis.xAxis);
-        console.log(d3.event.scale);
-        // if (d3.event.scale > 20){
-        //     axis.xAxis.ticks(d3.time.minutes, 5);
-        // } else if (d3.event.scale > 10){
-        //     axis.xAxis.ticks(d3.time.minutes, 10);
-        // } else if (d3.event.scale > 6){
-        //     axis.xAxis.ticks(d3.time.minutes, 15);
-        // } else if (d3.event.scale > 4){
-        //     axis.xAxis.ticks(d3.time.minutes, 30);
-        // } else if (d3.event.scale > 2){
-        //     axis.xAxis.ticks(d3.time.hour, 1);
-        // } else if (d3.event.scale > 1){
-        //     axis.xAxis.ticks(d3.time.hour, 2);
-        // } else {
-        //     axis.xAxis.ticks(d3.time.hour, 1);
-        // };
         let rectsGroups = d3.selectAll('.events-rect')[0];
         for (let rectsGroup of rectsGroups){
           rectsGroup = d3.select(rectsGroup);

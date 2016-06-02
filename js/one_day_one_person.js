@@ -200,7 +200,6 @@ let main = (bodyClass) => {
             return cx;
       })
       .transition().duration(duration).ease('linear')
-      // .attr('transform', 'translate({0}, {1})'.format(axisTransform[0], 0))
       .attrTween('transform', function(d, i){
         let ele = d3.select(this);
         let cx = ele.attr('cx');
@@ -208,7 +207,6 @@ let main = (bodyClass) => {
           let x = axisTransform[0] * tick;
           if ((cx <= get_width() / 2 - x) && ele.attr('flag') == 'false'){
             ele.attr('flag', 'true');
-            // console.log('bubble point', d.asr_text);
             addBubblePoint(d);
           }
           return 'translate({0}, 0)'.format(x);

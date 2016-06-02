@@ -1,3 +1,5 @@
+// dummy data for pre-test
+
 export let oneDayOnePersonData = {
   'name': 'ysw',
   'events': [
