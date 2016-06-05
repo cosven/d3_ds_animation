@@ -6,6 +6,7 @@ import {test_string_format} from "./tests";
 import * as oneDayOnePerson from "./one_day_one_person";
 import * as oneDayMultiPerson from "./one_day_multi_person";
 import * as multiDayOnePerson from "./multi_day_one_person";
+import * as multiDayMultiPerson from './multi_day_multi_person';
 import * as data_access from './data_access';
 
 window.$ = $;
