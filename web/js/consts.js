@@ -8,3 +8,5 @@ export let get_width = () => {
 export let get_height = () => {
   return $(window).height();
 }
+
+export const server_api = 'http://127.0.0.1:5000/api/v1';

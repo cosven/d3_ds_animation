@@ -1,6 +1,6 @@
 import $ from "jquery";
 import d3 from 'd3';
-import {get_width, get_height} from './consts';
+import {get_width, get_height, server_api} from './consts';
 import {access_data} from './data_access';
 import {getEventColor, str_to_date} from './utils';
 
@@ -153,7 +153,11 @@ let main = (bodyClass) => {
     let persons = [data, data, data];
     loadData(persons);
   };
-  access_data('010116000240.json', tmp); 
+    
+  $.get(server_api + '/user/010116000240', (data, error) => {
+    tmp(data['data']);
+  });
+  // access_data('010116000240.json', tmp); 
 
   $('.datepick').datepicker({
     dateFormat: "yy-mm-dd",
