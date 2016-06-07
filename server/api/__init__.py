@@ -1,4 +1,5 @@
 import os
+import json
 
 from flask import Blueprint, request
 from flask_restful import Api, Resource
@@ -22,6 +23,9 @@ class User(Resource):
 
 class Users(Resource):
     def get(self):
+        random = request.args.get('random')
+        if random:
+            return self.get_random_users()
         uids = request.args.get('uid').split(',')
         result = []
         for uid in uids:
@@ -33,6 +37,11 @@ class Users(Resource):
                 print('no user %s data' % uid)
                 continue
         return result
+
+    def get_random_users(self):
+        with open(DATA_DIR + 'random.json') as f:
+            data = json.load(f)
+        return data
 
 
 class UserList(Resource):
