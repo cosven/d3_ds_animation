@@ -22,7 +22,8 @@ gulp.task("img", () => {
   gulp.src(['./node_modules/jquery-ui/themes/ui-darkness/images/*.*',],
            {base: './node_modules/jquery-ui/themes/ui-darkness/'})
     .pipe(gulp.dest('./assert/'));
-
+  gulp.src([ './imgs/rokid.png', ])
+    .pipe(gulp.dest('./assert/'));
 });
 
 gulp.task("js", () => {

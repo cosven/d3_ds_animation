@@ -1,0 +1,63 @@
+body.index
+  width 960px
+  margin 0 auto
+  background-color #222
+  .container
+    width 300px
+    height 400px
+    display block
+    padding-top 150px
+    margin 0 auto
+    .rokid
+      position relative
+      background-position center center
+      background-image url(/assert/rokid.png)
+      background-size 172px 220px
+      width 172px
+      height 220px
+      margin 0 auto
+      animation-name shake
+      animation-iteration-count infinite
+      animation-timing-function ease-in-out
+      animation-duration 2.6s
+      @keyframes shake
+        0%
+          top 0px
+        50%
+          top 80px
+        100%
+          top 0px
+      .shining
+        position relative
+        top 35px
+        left -2px
+        width 80px
+        height 70px
+        border-radius 50%
+        margin 0 auto
+        box-shadow 0px 0px 200px 50px white
+        animation-name shine
+        animation-iteration-count infinite
+        animation-timing-function ease-in-out
+        animation-duration 2.6s
+        @keyframes shine
+          0%
+            box-shadow 0px 0px 200px 20px white
+          50%
+            box-shadow 0px 0px 200px 50px white
+          100%
+            box-shadow 0px 0px 200px 20px white
+    .start-btn
+      display block
+      position relative
+      top 100px
+      p
+        text-align center
+        a
+          color white
+          font-size 20px
+          text-decoration none
+          &:hover
+            color yellow
+            cursor pointer
+
