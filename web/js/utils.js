@@ -252,3 +252,22 @@ export let get_kind = (d) => {
  */
   return type;
 }
+
+export let calcAngle = (a1, a2) => {
+  if (a1.sort().toString() == a2.sort().toString()){
+    return 0;
+  }
+  let sum = 0;
+  let sum1 = 0;
+  let sum2 = 0;
+  let angle = 0;
+  for (let i in a1){
+    let i1 = a1[i];
+    let i2 = a2[i];
+    sum += i1 * i2;
+    sum1 += i1 * i1;
+    sum2 += i2 * i2;
+  }
+  angle = Math.acos(sum*1.0/(Math.sqrt(sum1)*Math.sqrt(sum2)));
+  return (360*angle)/(2 * Math.PI);
+}
