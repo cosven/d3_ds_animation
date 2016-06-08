@@ -11,6 +11,7 @@ import * as data_access from './data_access';
 
 window.$ = $;
 window.jQuery = $;
+window.d3 = d3;
 
 
 function main(bodyClass) {

@@ -162,14 +162,14 @@ function showKeams(usersData, SVG) {
   // attention: same as left panel
   const eachRectHeight = 20;
   const rectMargin = 5;
-
+  d3.select('.vector-container').remove();
   let container = SVG.append('g')
     .attr('class', 'vector-container')
     .attr('transform', 'translate({0}, {1})'
           .format(leftPanelWidth, containerMargin.top))
     .attr('width', width-leftPanelWidth)
     .attr('height', leftPanelHeight);
-
+/*
   container.selectAll('.vector-line-group')
     .data(users)
     .enter()
@@ -206,6 +206,23 @@ function showKeams(usersData, SVG) {
         return 'translate({0}, {1})rotate({2})'.format(20, 20, angle);
       }
     });
+   */
+
+    let pgw = 200;
+    let pgh = 200;
+    let packGroup = container.append('g')
+      .attr('class', 'bubble-group')
+      .attr('transform', 'translate({0}, {1})'
+            .format(20, 50))
+      .attr('width', pgw).attr('height', pgh);
+
+    let pack = d3.layout.pack()
+      .sort(null)
+      .size([300, 300])
+      .value((d) => {
+        return 4;
+      })
+      .padding(0);
     
     let user1 = users[Math.floor(Math.random() * (users.length - 1))];
     let user2 = users[Math.floor(Math.random() * (users.length - 1))];
@@ -229,6 +246,60 @@ function showKeams(usersData, SVG) {
       return group[index];
     }
 
+    function showKmeans(ids1, ids2, c1, c2){
+      packGroup.html('');
+      let data = {};
+      data.name = '';
+      data.children = [];
+      let group1 = [];
+      for (let id of ids1){
+        group1.push({name: id});
+      }
+      let group2 = [];
+      for (let id of ids2){
+        group2.push({name: id});
+      }
+      data.children.push({name: ' ', children: group1});
+      data.children.push({name: '  ', children: group2});
+
+      let node = packGroup.selectAll('.node')
+        .data(pack.nodes(data));
+      node.enter()
+        .append('g')
+        .attr('class', 'node')
+        .append('circle')
+        .attr('r', (d) => { 
+          return d.r; 
+        })
+        .style('fill-opacity', (d, i) => {
+          if (i==0) return 0;
+          return 1;
+        })
+        .style('stroke', '#222')
+        .style('fill', function(d, i) {
+          if (d.name == c1 || d.name == c2){
+            return 'yellow';
+          }
+          return 'white';
+        })
+        .append('title')
+        .text((d) => {
+          if (!isNaN(parseInt(d.name))){
+            return users[d.name].did;
+          }
+          return '';
+        });
+      node.append('text')
+        .attr('class', 'text')
+        .style('text-anchor', 'middle')
+        .text((d) => {
+          return d.name;
+        });
+      node.attr('transform', (d) => {
+          return 'translate({0}, {1})'.format(d.x, d.y);
+        });
+    }
+
     function kmeans(user1, user2, users){
       console.log('kmeans...........')
       let group1Ids = [];
@@ -243,16 +314,19 @@ function showKeams(usersData, SVG) {
           group2Ids.push(i);
         }
       }
+      let c1 = getCenter(group1Ids);
+      let c2 = getCenter(group2Ids);
+      showKmeans(group1Ids, group2Ids, c1, c2);
       if (group1Ids.sort().toString() == group1.sort().toString()){
         console.log('finished', group1Ids, group2Ids);
         return 0;
       } else {
         group1 = group1Ids;
         group2 = group2Ids;
-        let c1 = getCenter(group1Ids);
-        let c2 = getCenter(group2Ids);
         console.log(c1, c2);
-        kmeans(users[c1], users[c2], users);
+        setTimeout(function(){ 
+          kmeans(users[c1], users[c2], users);
+        }, 1000);
       }
     }
     kmeans(user1, user2, users);

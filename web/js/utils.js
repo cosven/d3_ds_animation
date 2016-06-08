@@ -12,36 +12,6 @@ String.prototype.format = function() {
 };
 
 
-export let getEventColor = (event) => {
-  const eventsColor = d3.scale.category10().domain(d3.range(0, 10));
-  let color = eventsColor(0);
-
-  switch (event.rec_type) {
-    case 'unknown':
-      color = eventsColor(0);
-      break;
-    case 'play_random':
-    case 'play':
-    case 'play_hot_radio':
-      color = eventsColor(1);
-      break;
-    case 'current_time':
-      color = eventsColor(2);
-      break;
-    case 'query':
-    case 'query-alarm':
-      color = eventsColor(3);
-      break;
-    case 'chat':
-      color = eventsColor(4);
-      break;
-    default:
-      color = eventsColor(5);
-  }
-  return color;
-};
-
-
 export let str_to_date = (str) => {
     let s_s = str.split(' ');
     let ymd = s_s[0].split('-');
@@ -68,10 +38,10 @@ export let day_to_date = (str) => {
 
 
 
-export let get_record_color = (rec_type) => {
+export let get_record_color = (kind) => {
   const eventsColor = d3.scale.category10().domain(d3.range(0, 10));
   let color = eventsColor(0);
-  switch (rec_type) {
+  switch (kind) {
   case 'music':
       color = eventsColor(1);
       break;
@@ -270,4 +240,15 @@ export let calcAngle = (a1, a2) => {
   }
   angle = Math.acos(sum*1.0/(Math.sqrt(sum1)*Math.sqrt(sum2)));
   return (360*angle)/(2 * Math.PI);
+}
+
+
+export let getParameterByName = (name, url) => {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
 }

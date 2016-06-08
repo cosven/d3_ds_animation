@@ -1,17 +1,20 @@
 import $ from "jquery";
 import d3 from 'd3';
-import {get_width, get_height} from './consts';
-import {getEventColor, str_to_date} from './utils';
+import {get_width, get_height, server_api} from './consts';
+import {get_record_color, get_kind, str_to_date, getParameterByName, kinds} from './utils';
 import {access_data} from './data_access';
+
+const svgWidth = 960;
+let gloDuration = 100 * 60 *24;
 
 
 class TimeAxisManager {
-  constructor(bodyClass) {
+  constructor(bodyClass, wholeDay) {
     this.bodyClass = bodyClass;
-    this.wholeDay = [new Date(2016, 5-1, 11), new Date(2016, 5-1, 12)];
+    this.wholeDay = wholeDay;
     this.timeScale = d3.time.scale()
       .domain(this.wholeDay)
-      .range([0, get_width() * 8 - 40]);
+      .range([0, svgWidth * 7 - 2*20]);
     this.timeAxis = d3.svg.axis()
       .scale(this.timeScale)
       .ticks(d3.time.minute, 30)
@@ -33,23 +36,74 @@ class TimeAxisManager {
   }
 }
 
+let getUserData = (callback) => {
+  let did = getParameterByName('did');
+  $.get(server_api + '/user/{0}'.format(did), (data, error) => {
+    callback(data.data);
+  });
+};
 
-let main = (bodyClass) => {
 
-  const margins = [20, 20, 20, 20];  // top, right, bottom, left
-  let axisPos = [0, get_height() / 2];  // x, y
-  let axisTransform = [0 - 7 * get_width(), axisPos[1]];
-  let bpgAxisHMargin = 100;
+let setAsrText = (text) => {
+  let ele = $('#asrtext')
+  let origin = ele.text();
+  ele.text(origin + text + '\n');
+  let st = ele.prop('scrollHeight') - ele.height();
+  ele.animate({scrollTop: st + 'px'}, 200);
+}
 
-  let bpgWidth = 300;
-  let bpgHeight = 300;
-  let bpgPosX = margins[3];
-  let bpgPosXD = margins[3];
-  let bpgPosY = get_height() / 2;
+let setTimeLabel = (text) => {
+  text = text * (60 * 1000 * 60 * 24 / gloDuration)
+  let m = Math.floor(text / (1000 * 60));
+  let h = Math.floor(m / 60);
+  m = Math.floor(m % 60);
+  if (m < 10){
+    m = '0' + m;
+  }
+  if (h < 10){
+    h = '0' + h;
+  }
+  if (h <= 12){
+    $('#time-label').text(h + ':' + m + ' am');
+  } else {
+    $('#time-label').text(24-h + ':' + m + ' pm');
+  }
+};
 
-  let manager = new TimeAxisManager();
-  let bpgOneData = {name: 'music', children: []};
-  let bpgTwoData = {name: 'music', children: []};
+let setHint = (text) => {
+  $('#hint').text(text);
+  setTimeout(() => {
+    $('#hint').text('');
+  }, 3000)
+};
+
+function show(bodyClass, date){
+  // clear original svg element
+  d3.select($(bodyClass + '-div')[0]).html('');
+
+  const svgHeight = 200;
+  let SVG = d3.select($(bodyClass + '-div')[0])
+    .append('svg')
+    .attr('width', svgWidth)
+    .attr('height', 200);
+
+  // parse date
+  let dArray = date.split('-');
+  let y = parseInt(dArray[0]);
+  let m = parseInt(dArray[1]);
+  let d = parseInt(dArray[2]);
+
+  let kindsCount = {};
+  for (let k of kinds){
+    kindsCount[k] = 0;
+  }
+
+  let wholeDay = [new Date(y, m-1, d), new Date(y, m-1, d+1)];
+  let manager = new TimeAxisManager(bodyClass, wholeDay);
+
+  const margins = [20, 40, 20, 40];  // top, right, bottom, left
+  let axisPos = [0, svgHeight / 4];  // x, y
+  let axisTransform = [0 - 7 * svgWidth, axisPos[1]];
 
   let oneDayOnePersonData = null;
 
@@ -62,134 +116,109 @@ let main = (bodyClass) => {
     }
   }
 
-  let timeAxisZoomed = () => {
-    let data = getData();
-    SVG.select('.axis').call(manager.timeAxis);
-    pointGroup.selectAll('circle')
-      .data(oneDayOnePersonData.records)
-      .attr('cx', (d, i) => {
-        return manager.timeScale(str_to_date(d.timestamp));
+  let initKindCount = () => {
+    cutlineGroup.selectAll('.cutline-count')
+      .data(kinds)
+      .enter()
+      .append('text')
+      .attr('class', 'cutline-count')
+      .attr('x', (d, i) => {
+        return i * 98-20;
+      })
+      .attr('y', 110)
+      .attr('fill', 'white')
+      .attr('dx', 20)
+      .attr('dy', 15)
+      .style('text-anchor', 'middle')
+      .style('font-size', '11px')
+      .text((d) => {
+        return kindsCount[d];
       });
   };
 
-  let timeAxisZoom = d3.behavior.zoom()
-    .x(manager.timeScale)
-    .scaleExtent([1, Infinity])
-    .on('zoom', timeAxisZoomed);
+  let redrawKindCount = () => {
+    cutlineGroup.selectAll('.cutline-count')
+      .data(kinds)
+      .attr('class', 'cutline-count')
+      .text((d) => {
+        return kindsCount[d];
+      });
+  }
 
   let loadData = (data) => {
     pointGroup.selectAll('circle')
       .data(data.records)
       .enter()
       .append('circle')
+      .filter((d) => {
+        if (str_to_date(d.timestamp) >= wholeDay[0] && str_to_date(d.timestamp) <= wholeDay[1]){
+          return true;
+        }
+        return false;
+      })
       .attr('fill', (d, i) => {
-        return getEventColor(d);
+        return get_record_color(get_kind(d));
       })
       .attr('cx', (d, i) => {
         return manager.timeScale(str_to_date(d.timestamp));
       })
       .attr('cy', 0)
-      .attr('r', 6)
-      .append('title')
-      .text((d, i) => {
-        return d.rec_type;
+      .attr('r', 6);
+
+    cutlineGroup.selectAll('.cutline-circle')
+      .data(kinds)
+      .enter()
+      .append('circle')
+      .attr('class', 'cutline-circle')
+      .attr('transform', (d, i) => {
+        return 'translate({0}, {1})'.format(i*98, 120);
+      })
+      .attr('r', 15)
+      .attr('fill', (d) => {
+        return get_record_color(d);
       });
-  };
 
-  let addBubblePoint = (e) => {
-    let _addBubblePoint = (node, className) => {
-      node.enter()
-        .append('g')
-        .attr('class', className)
-        .attr('transform', (d) => {
-          return 'translate({0}, {1})'
-              .format(get_width()/2, -1 * bpgAxisHMargin);
-        })
-        .append('circle')
-        .attr('r', (d) => {return 6;})
-        .style('fill-opacity', (d, i) => {
-            if (i==0)
-                return 0;
-            return 1;
-
-        })
-        .style('fill', (d) => {
-          return getEventColor(d);
-        });
-      node.append('title')
-        .text((d) => {
-          return d.asr_text;
-        });
-      // node.append('text')
-      //   .style('text-anchor', 'middle')
-      //   .text((d) => {
-      //     return d.asr_text;
-      //   });
-      node.transition()
-        .duration(1000)
-        .attr('transform', (d) => {
-          return 'translate({0}, {1})'.format(d.x, d.y);
-        });
-      node.select('circle')
-        .transition()
-        .duration(1000)
-        .attr('r', (d) => { return d.r; });
-    }
-
-    let addBubblePointToOne = (e) => {
-      let className = 'node-one';
-      bpgOneData.children.push(e);
-      let node = bubblePointGroupOne.selectAll('.' + className)
-        .data(bubbleOne.nodes(bpgOneData));
-      _addBubblePoint(node, className);
-    }
-
-    let addBubblePointToTwo = (e) => {
-      let className = 'node-two';
-      bpgTwoData.children.push(e);
-      let node = bubblePointGroupTwo.selectAll('.' + className)
-        .data(bubbleOne.nodes(bpgTwoData));
-      _addBubblePoint(node, className);
-    }
-   
-    switch (e.rec_type) {
-      case 'whether':
-        addBubblePointToOne(e);
-        break;
-      case 'play':
-        addBubblePointToTwo(e);
-        break;
-      case 'current_time':
-        addBubblePointToOne(e);
-        break;
-      case 'wiki':
-        addBubblePointToTwo(e);
-        break;
-      case 'message':
-        addBubblePointToOne(e);
-        break;
-      default:
-        addBubblePointToOne(e);
-    }
+    cutlineGroup.selectAll('.cutline-kind')
+      .data(kinds)
+      .enter()
+      .append('text')
+      .attr('class', 'cutline-kind')
+      .attr('x', (d, i) => {
+        return i * 98-20;
+      })
+      .attr('y', 130)
+      .attr('dx', 20)
+      .attr('dy', 15)
+      .attr('fill', '#CCC')
+      .style('text-anchor', 'middle')
+      .style('font-size', '11px')
+      .text((d) => {
+        return d;
+      });
+      initKindCount();
   };
 
   let animation = () => {
-    const duration = 50000;
+    const duration = gloDuration;
     const easeType = 'linear';
 
-    let timePeriod = [new Date(2016, 5-1, 11), new Date(2016, 5-1, 12)];
+    let timePeriod = wholeDay;
     let colors = ['white', '#222'];
     let textColors = [...colors].reverse();
     let colorRange = manager.colorTimeMap(colors, timePeriod);
     let textColorRange = manager.colorTimeMap(textColors, timePeriod)
     // manager.timeScale.domain(timePeriod);
-
+  
     SVG.select('.axis')
-      .style({'stroke': textColorRange[0], 'fill': textColorRange[0]})
-      .transition().duration(duration).ease(easeType)
+      .style({'stroke': textColorRange[1], 'fill': textColorRange[0]})
+      .transition().duration(duration/2).ease(easeType)
+      .style({'stroke': textColorRange[0], 'fill': textColorRange[1]})
       .attr('transform', 'translate({0}, {1})'
-        .format(axisTransform[0], axisTransform[1]))
-      .style({'stroke': textColorRange[1], 'fill': textColorRange[1]})
+            .format(axisTransform[0]/2, axisTransform[1]))
+      .transition().duration(duration/2).ease(easeType)
+      .attr('transform', 'translate({0}, {1})'
+            .format(axisTransform[0], axisTransform[1]))
+      .style({'stroke': textColorRange[1], 'fill': textColorRange[0]})
       .call(manager.timeAxis);
 
     pointGroup.selectAll('circle')
@@ -199,66 +228,54 @@ let main = (bodyClass) => {
         let cx = manager.timeScale(str_to_date(d.timestamp));
             return cx;
       })
-      .transition().duration(duration).ease('linear')
+      .transition().duration(duration).ease(easeType)
       .attrTween('transform', function(d, i){
         let ele = d3.select(this);
         let cx = ele.attr('cx');
+        let asrText = d.asr_text;
+        let timestamp = d.timestamp;
+        let kind = get_kind(d);
         return (tick) => {
           let x = axisTransform[0] * tick;
-          if ((cx <= get_width() / 2 - x) && ele.attr('flag') == 'false'){
+          // svgWidth / 2
+          if ((cx <= 0 - x) && ele.attr('flag') == 'false'){
+            setAsrText(timestamp+ ' ' + asrText);
+            console.log(kind);
+            kindsCount[kind] ++;
+            redrawKindCount();
             ele.attr('flag', 'true');
-            addBubblePoint(d);
           }
+          setTimeLabel(tick * duration)
           return 'translate({0}, 0)'.format(x);
         };
       });
 
     d3.select($(bodyClass)[0])
+      .style('background', colorRange[1])
+      .transition().duration(duration/4).ease(easeType)
+      .style('background', colorRange[1])
+      .transition().duration(duration/4).ease(easeType)
       .style('background', colorRange[0])
-      .transition().duration(duration).ease(easeType)
+      .transition().duration(duration/4).ease(easeType)
+      .style('background', colorRange[1])
+      .transition().duration(duration/4).ease(easeType)
       .style('background', colorRange[1]);
 
-    console.log('animation finished');
+    d3.selectAll('p')
+      .style('color', colorRange[0])
+      .transition().duration(duration/2).ease(easeType)
+      .style('color', colorRange[1])
+      .transition().duration(duration/2).ease(easeType)
+      .style('color', colorRange[0]);
   };
-
-  let SVG = d3.select($(bodyClass)[0])
-    .append('svg')
-    .attr('width', get_width())
-    .attr('height', get_height())
-    .call(timeAxisZoom);
 
   let pointGroup = SVG.append('g')
     .attr('class', 'event-point')
-    .attr('transform', 'translate({0}, {1})'.format(margins[3], axisPos[1]));
+    .attr('transform', 'translate({0}, {1})'.format(margins[3], axisTransform[1]));
 
-  let bubblePointGroupOne = SVG.append('g')
-    .attr('class', 'bubble-group')
-    .attr('transform', 'translate({0}, {1})'.format(bpgPosX, get_height()/2 + bpgAxisHMargin))
-    .attr('width', bpgWidth)
-    .attr('height', bpgHeight);
-
-  let bubblePointGroupTwo = SVG.append('g')
-    .attr('class', 'bubble-group')
-    .attr('transform', 'translate({0}, {1})'
-          .format(bpgPosX + bpgPosXD + bpgWidth, get_height()/ 2 + bpgAxisHMargin))
-    .attr('width', bpgWidth)
-    .attr('height', bpgHeight);
-
-  let bubbleOne = d3.layout.pack()
-    .sort(null)
-    .size([200, 200])
-    .value((d) => {
-      return 2;
-    })
-    .padding(2);
-
-  let bubbleTwo = d3.layout.pack()
-    .sort(null)
-    .size([200, 200])
-    .value((d) => {
-      return 2;
-    })
-    .padding(2);
+  let cutlineGroup = SVG.append('g')
+    .attr('class', 'cutline-group')
+    .attr('transform', 'translate({0}, {1})'.format(margins[3], 40));
 
   SVG.append('g')
     .attr('class', 'axis')
@@ -267,12 +284,66 @@ let main = (bodyClass) => {
     .call(manager.timeAxis);
   
   let tmp = (data) => {
-    oneDayOnePersonData = data;
-    loadData(data);
+    oneDayOnePersonData = {};
+    oneDayOnePersonData.did = data.did;
+    oneDayOnePersonData.records = [];
+
+    for (let record of data.records){
+      if (str_to_date(record.timestamp) >= wholeDay[0] && str_to_date(record.timestamp) <= wholeDay[1]){
+        oneDayOnePersonData.records.push(record);
+      }
+    }
+
+    let recordsLength = oneDayOnePersonData.records.length;
+    console.log(recordsLength);
+    if (recordsLength < 10) {
+      setHint('该用户当天操作太少，请选择其他日期');
+      return 0;
+    }
+    if (recordsLength > 200){
+      gloDuration = 300 * 60 *24;
+    } else if (recordsLength > 100 ) {
+      gloDuration = 100 * 60 *24;
+    } else {
+      gloDuration = 10 * 60 *24;
+    }
+
+    setHint('该用户当天和若琪有{0}次操作, 动画速度会根据操作次数自动设置'.format(oneDayOnePersonData.records.length));
+    setTimeout(() => {
+      setHint('即将隐藏工具栏，动画结束后显示');
+    }, 3000);
+    setTimeout(() => {
+      $('#op-group').hide();
+      setTimeout(() => {
+        $('#op-group').show();
+      }, gloDuration)
+    }, 6000);
+
+    loadData(oneDayOnePersonData);
     animation();
   };
+  getUserData(tmp);
+}
 
-  access_data('010116000240.json', tmp);
+
+let main = (bodyClass) => {
+
+  $('.datepick').datepicker({
+    dateFormat: "yy-mm-dd",
+    minDate: new Date(2016, 5 - 1, 6),
+    maxDate: new Date(2016, 6 - 1, 6)
+  });
+
+  $('#play-btn').click(() => {
+    let date = $('.datepick').val();
+    if (!date){
+      $('.datepick').focus();
+    } else {
+      $('#play-btn').text('正在获取数据...');
+      show(bodyClass, date);
+      $('#play-btn').text('开始播放');
+    }
+  });
 };
 
 $(() => {
