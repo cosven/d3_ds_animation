@@ -15,8 +15,11 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), '../datas/')
 
 class User(Resource):
     def get(self, uid):
-        f_path = DATA_DIR + 'speech_log－' + uid + '.xls'
-        data = xls_to_json(f_path)
+        try:
+            f_path = DATA_DIR + 'speech_log－' + uid + '.xls'
+            data = xls_to_json(f_path)
+        except:
+            data = {}
         return {'uid': uid,
                 'data': data}
 

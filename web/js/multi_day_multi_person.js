@@ -29,7 +29,7 @@ function getUsersData(callback){
 
 function show(usersData, SVG) {
   let colorCutlineMargin = {top: 20, left: 20};
-  let cutlineMargin = {top: 20, left: 100};
+  let cutlineMargin = {top: 20, left: 120};
   let cutlineAxisWidth = leftPanelWidth - cutlineMargin.left;
   let eachRectWidth = cutlineAxisWidth * 1.0/kinds.length;
   let eachRectHeight = 20;
@@ -88,11 +88,25 @@ function show(usersData, SVG) {
       .append('text')
       .attr('class', 'did-text')
       .attr('transform', 'translate({0}, {1})'
-            .format(-80, i*(rectMargin+eachRectHeight) - 5 ))
+            .format(-100, i*(rectMargin+eachRectHeight) - 5 ))
       .attr('dx', 40)
       .attr('dy', eachRectHeight)
       .attr('style', 'font-size: 12px; text-anchor: middle;')
-      .text(dids[i]);
+      .text(i+' -- '+dids[i])
+      .on('mouseover', function() {
+        d3.select(this).attr('fill', 'blue')
+          .style('cursor', 'pointer');
+      })
+      .on('mouseout', function() {
+        d3.select(this).attr('fill', '#222')
+          .style('cursor', 'pointer');
+      })
+      .on('click', function(){
+        console.log('clicked');
+        let did = dids[i];
+        let url = '/odop.html?did={0}'.format(did);
+        window.location = url;
+      })
     let g = rectContainer.append('g')
       .attr('class', '.kindscount-rect-container')
       .attr('transform', 'translate({0}, {1})'

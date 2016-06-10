@@ -11,4 +11,4 @@ app.register_blueprint(apiv1, url_prefix='/api/v1')
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run('0.0.0.0', debug=True)

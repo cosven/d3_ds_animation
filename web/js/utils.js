@@ -90,14 +90,17 @@ export let get_kind = (d) => {
       default:
         switch (d.module){
             case 'com.rokid.music1':
+            case 'rokid.radio':
             case 'app.music':
             case 'com.rokid.radio1':
                 type = kinds[0];
                 break;
             case 'com.rokid.system.idontknow':
+            case 'system.idontknow':
                 type = kinds[1];
                 break;
             case 'com.rokid.time1':
+            case 'rokid.time':
             case 'com.rokid.calendar1':
                 type = kinds[2];
                 break;
@@ -110,7 +113,9 @@ export let get_kind = (d) => {
                 break;
             case 'com.rokid.system.light':
             case 'com.rokid.system.volume':
+            case 'rokid.volume':
             case 'com.rokid.system.smarthome':
+            case 'app.rokidhomekit':
             case 'com.rokid.system.homebase':
             case 'com.rokid.app.smarthome':
             case 'com.rokid.system.command':
@@ -120,6 +125,8 @@ export let get_kind = (d) => {
             case 'com.rokid.system.power':
             case 'com.rokid.app.bugfix':
             case 'com.rokid.system.lightapp':
+            case 'com.rokid.light':
+            case 'rokid.light':
                 type = kinds[5];
                 break;
             case 'com.rokid.weather1':
