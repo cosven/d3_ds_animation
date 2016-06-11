@@ -78,7 +78,7 @@ export let get_record_color = (kind) => {
 
 
 export let kinds = ['music', 'unknown', 'time', 'clock', 'chat', 'control',
-                    'weather', 'wiki', 'story', 'help'];
+                    'weather', 'wiki&news', 'story', 'help'];
 
 
 export let get_kind = (d) => {
@@ -105,6 +105,7 @@ export let get_kind = (d) => {
                 type = kinds[2];
                 break;
             case 'com.rokid.alarm1':
+            case 'rokid.alarm':
                 type = kinds[3];
                 break;
             case 'com.rokid.system.chat':
@@ -125,8 +126,10 @@ export let get_kind = (d) => {
             case 'com.rokid.system.power':
             case 'com.rokid.app.bugfix':
             case 'com.rokid.system.lightapp':
+            case 'rokid.lightapp':
             case 'com.rokid.light':
             case 'rokid.light':
+            case 'rokid.Vassasin':
                 type = kinds[5];
                 break;
             case 'com.rokid.weather1':
@@ -134,12 +137,16 @@ export let get_kind = (d) => {
                 type = kinds[6];
                 break;
             case 'com.rokid.wikiqa':
+            case 'app.wiki':
+            case 'app.news':
                 type = kinds[7];
                 break;
             case 'com.rokid.childstory':
                 type = kinds[8];
                 break;
             case 'com.rokid.system.functionguide':
+            case 'com.rokid.nlp.app.functionguide':
+            case 'rokid.function_guide':
                 type = kinds[9];
                 break;
             default:

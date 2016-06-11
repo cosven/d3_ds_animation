@@ -5,13 +5,227 @@ import {access_data} from './data_access';
 import {str_to_date, day_to_date, get_record_color, get_kind, kinds, getParameterByName} from './utils';
 
 
+class AxisShow {
+  constructor(bodyClass, wholeDay) {
+    this.bodyClass = bodyClass;
+    this.wholeDay = wholeDay;
+
+    this.xWidth = 860;
+
+    this.xScale = d3.time.scale()
+      .domain(this.wholeDay)
+      .range([0, this.xWidth]);
+
+    this._yScale = null;
+
+    this.xAxis = d3.svg.axis()
+      .scale(this.xScale)
+    // .ticks(d3.time.hour, 3)
+      .orient('bottom');
+
+  }
+
+  yScale(persons) {
+    let index = d3.range(0, persons.length);
+    let ordinal = d3.scale.ordinal()
+          .domain(index)
+          .range(persons);
+    this._yScale = ordinal;
+    return this._yScalea;
+  }
+}
+
+let showDay = (date, records) => {
+  let bodyClass = '.show';
+  let nextDate = new Date(date);
+  nextDate.setDate(date.getDate() + 1);
+  let axis = new AxisShow(bodyClass, [date, nextDate]);
+
+  let width = axis.xWidth;  // equal to xAxis width
+  let height = 200;
+  let axisMargin = {left: 30, top: 10}
+  let axisPos = {x: axisMargin.left, y: axisMargin.top};
+
+  let xAxisZoom = d3.behavior.zoom()
+    .x(axis.xScale)
+    .scaleExtent([1, 4]);
+  
+  d3.select($(bodyClass)[0]).html('');
+  let SVG = d3.select($(bodyClass)[0])
+    .append('svg')
+    .attr('width', 960)
+    .attr('height', height);
+
+  SVG.append('g')
+    .attr('class', 'axis-odmp')
+    .attr('transform', 'translate({0}, {1})'
+          .format(axisPos.x, axisPos.y))
+    .attr('fill', 'none')
+    .call(axis.xAxis);
+
+  function loadUser1(records){
+    let groupHeight = 20; 
+    let yRectMargin = 5;
+
+    let y = axisPos.y + groupHeight + yRectMargin;
+    let x = axisPos.x;
+
+    let rectsGroup = SVG.append('g')
+      .attr('width', axis.xWidth)
+      .attr('class', 'events-rect')
+      .attr('transform', 'translate({0}, {1})'
+            .format(x, y));
+
+    let lineGroup = SVG.append('g')
+      .attr('width', axis.xWidth)
+      .attr('class', 'events-line')
+      .attr('id', 'linegroup-1')
+      .attr('transform', 'translate({0}, {1})'
+            .format(x, y+groupHeight));
+
+    let cutline = SVG.append('g')
+      .attr('width', axis.xWidth)
+      .attr('class', 'cutline')
+      .attr('id', 'cutline-1')
+      .attr('transform', 'translate({0}, {1})'
+            .format(x, y+100));
+
+    rectsGroup.append('rect')
+      .attr('class', 'rect-container')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', width)
+      .attr('height', groupHeight)
+      .attr('fill', '#DDD');
+
+    rectsGroup.selectAll('.rect-content')
+      .data(records)
+      .enter()
+      .append('rect')
+      .filter((d) => {
+        let cDate = str_to_date(d.timestamp);
+        if (cDate >= date && cDate < nextDate){
+          return true;
+        }
+        return false;
+      })
+      // .filter((d) => {
+      //   if (get_kind(d) == 'unknown'){
+      //     return false;
+      //   }
+      //   return true;
+      // })
+      .attr('class', 'rect-content')
+      .attr('x', (d) => {
+        let cDate = str_to_date(d.timestamp);
+        return axis.xScale(cDate);
+      })
+      .attr('y', 0)
+      .attr('width', () => {
+        return 1;
+      })
+      .attr('height', groupHeight)
+      .attr('fill', (d) => {
+        return get_record_color(get_kind(d));
+      })
+      .append('title')
+      .text((d) => {
+        return d.asr_text;
+      });
+    
+    let userKindsCount = {};
+    let total = 0;
+    for (let kind of kinds) {
+      userKindsCount[kind] = 0;
+    }
+    for (let record of records){
+      let cDate = str_to_date(record.timestamp);
+      if (cDate >= date && cDate < nextDate){
+        let kind = get_kind(record);
+        userKindsCount[kind] ++;
+        total ++;
+      }
+    }
+
+    let widthList = [];
+    for (let kind of kinds){
+      let width = Math.floor(axis.xWidth * userKindsCount[kind] * 1.0 / total);
+      widthList.push(width);
+    }
+
+    cutline.selectAll('.rect-cutline')
+      .data(kinds)
+      .enter()
+      .append('rect')
+      .attr('fill', (kind) => {
+        return get_record_color(kind);
+      })
+      .attr('x', (kind, i) => {
+        let x = 0;
+        for (let j=0; j < i ; j++){
+          x += widthList[j];
+        }
+        return x;
+      })
+      .attr('y', 0)
+      .attr('width', (kind, i) => {
+        return widthList[i];
+      })
+      .attr('height', groupHeight);
+    
+    let alreadyLineCount = {};
+    for (let kind of kinds) {
+      alreadyLineCount[kind] = 0;
+    }
+
+    lineGroup.selectAll('.line-content')
+      .data(records)
+      .enter()
+      .append('line')
+      .attr('class', 'line-content')
+      .filter((d) => {
+        let cDate = str_to_date(d.timestamp);
+        if (cDate >= date && cDate < nextDate){
+          return true;
+        }
+        return false;
+      })
+      .sort((a, b) => {
+        return d3.ascending(str_to_date(a.timestamp), str_to_date(b.timestamp));
+      })
+      .attr('x1', (d) => {
+        let cDate = str_to_date(d.timestamp);
+        return axis.xScale(cDate);
+      })
+      .attr('y1', 0)
+      .attr('x2', (record, i) => {
+        let x = 0;
+        let kind = get_kind(record);
+        let k = kinds.indexOf(kind);
+        for (let j=0; j < k; j++){
+          x += widthList[j];
+        }
+        alreadyLineCount[kind] ++;
+        return x + alreadyLineCount[kind];
+      })
+      .attr('y2', 100-groupHeight)
+      .attr('stroke', (record, i) => {
+        return get_record_color(get_kind(record));
+      })
+      .attr('stroke-opacity', 0.3)
+      .attr('stroke-width', '1px');
+  }
+  loadUser1(records);
+};
+
+
 class Axis {
   constructor(bodyClass, period, maxOp) {
     this.bodyClass = bodyClass;
     this.period = period;
     this.maxOp = maxOp + 30;
     this.xWidth = 960 - 100; 
-    this.yHeight = 460;
+    this.yHeight = 360;
 
     this.xScale = d3.time.scale()
       .domain(this.period)
@@ -36,7 +250,6 @@ class Axis {
     this.xScale.domain(this.period);
     this.xAxis.scale(this.xScale);
   }
-
 }
 
 
@@ -77,6 +290,8 @@ let getPeriod = (data) => {
   // update period
   // axis.setPeriod([minTimeStamp, maxTimeStamp]);
   // SVG.select('.axis-mdop-x').call(axis.xAxis);
+  minTimeStamp = new Date(2016, 5-1, 5);
+  maxTimeStamp = new Date(2016, 6-1, 7);
   return [minTimeStamp, maxTimeStamp];
 }
 
@@ -197,7 +412,7 @@ let main = (bodyClass) => {
         for (let day_record of dayRecords){
           let kind = get_kind(day_record);
           kinds_data[kind]++;
-        }
+       }
 
         rectsGroup.selectAll('.rect-content')
           .data(kinds)
@@ -221,6 +436,18 @@ let main = (bodyClass) => {
           })
           .attr('fill', (d) => {
             return get_record_color(d);
+          })
+          .on('mouseover', function(kind, i) {
+              let dArray = k.split('-');
+              let y = parseInt(dArray[0]);
+              let m = parseInt(dArray[1]);
+              let d = parseInt(dArray[2]);
+              let date  = new Date(y, m-1, d);
+
+              showDay(date, dayRecords);
+            $('.show-container').show();
+          })
+          .on('mouseout', function(kind, i) {
           })
           .append('title')
           .text((d) => { return d; });
