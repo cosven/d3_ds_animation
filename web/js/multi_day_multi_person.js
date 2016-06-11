@@ -142,6 +142,15 @@ function show(usersData, SVG) {
       .attr('dy', eachRectHeight/2 + 5)
       .attr('style', 'font-size: 12px; text-anchor: middle;')
       .text((d, i) => { return d; });
+
+    g.append('rect')
+      .attr('id', () => {
+        return dids[i] + '-rect';
+      })
+      .attr('width', eachRectWidth * (kinds.length))
+      .attr('height', eachRectHeight)
+      .attr('fill', 'none');
+    
   }
 }
 
@@ -294,7 +303,37 @@ function showKeams(usersData, SVG) {
           if (d.name == c1 || d.name == c2){
             return 'yellow';
           }
-          return 'white';
+          return 'none';
+        })
+        .on('mouseover', function(d) {
+          let didIndex = parseInt(d.name);
+          if (!isNaN(didIndex)){
+            let eid = '#' + users[didIndex].did + '-rect';
+            d3.select($(eid)[0])
+              .attr('fill', 'rgba(0, 0, 0, 0.3)');
+            d3.select(this).style('cursor', 'pointer');
+            if (d.name == c1 || d.name == c2) return 0;
+            d3.select(this).style('fill', 'rgba(0, 0, 0, 0.2)');
+          }
+        })
+        .on('mouseout', function(d) {
+          let didIndex = parseInt(d.name);
+          if (!isNaN(didIndex)){
+            let eid = '#' + users[didIndex].did + '-rect';
+            d3.select($(eid)[0])
+              .attr('fill', 'none');
+            d3.select(this).style('cursor', 'normal');
+            if (d.name == c1 || d.name == c2) return 0;
+            d3.select(this).style('fill', 'none');
+          }
+        })
+        .on('click', function(d){
+          let didIndex = parseInt(d.name);
+          if (!isNaN(didIndex)){
+            let did = users[didIndex].did;
+            let url = '/odop.html?did={0}'.format(did);
+            window.location = url;
+          }
         })
         .append('title')
         .text((d) => {

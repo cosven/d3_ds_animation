@@ -1,38 +1,54 @@
 .oneDayMultiPerson
-  background white
-  border 0px
-  padding 0px
+  display block
+  width 960px
+  margin 0 auto
+  font-family Monaco
   .header
-    height 64px
+    height 80px
     display block
-    border-bottom 2px solid #CCC
-  .container
+    p
+      display inline-block
+      padding-top 20px
+    a
+      display inline-block
+      left 600px
+      text-decoration none
+      position relative
+    .op-group
+      font-size 12px
+      display block
+      p
+        padding 0
+        margin 0
+        display inline-block
+      span#hint
+        color red
+  .info-container
+    position relative
+    top 100px
+    width 700px
+    height 300px
+    margin 0 auto
     display block
-    height 560px
-    width 100%
-    text-align center
-    vertical-align top
-    .op-container
-      margin-top 40px  // same as svg margin
+    .time-label
+      font-size 40px
+      font-weight bold
+      width 220px
+      height 60px
+      position relative
+      display inline-block
       vertical-align top
+    #asrtext
+      vertical-align top
+      overflow-x hidden
+      overflow-y hidden
+      margin-left 200px
       display inline-block
-      width 240px
-      height 100%
-      .op-group
-        padding 5px
-        span
-          color #CCC
-          width 80px
-          display inline-block
-        .datepick
-          width 130px
-          height 24px
-          border 0
-          border-radius 3px
-          padding 0
-          padding-left 4px
-          font-family Monaco, "Ubuntu Mono"
+      position relative
+      font-size 12px
+      width 200px
+      height 140px
+      white-space pre-wrap
     .oneDayMultiPerson-div
-      display inline-block
-      width 1080px
-      margin 0 auto
+      position relative
+      width 960px

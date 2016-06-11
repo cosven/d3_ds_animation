@@ -29,6 +29,10 @@ class Users(Resource):
         random = request.args.get('random')
         if random:
             return self.get_random_users()
+        range_arg = request.args.get('choices')
+        if range_arg == 'all':
+            return self.get_random_users()
+
         uids = request.args.get('uid').split(',')
         result = []
         for uid in uids:
@@ -43,6 +47,11 @@ class Users(Resource):
 
     def get_random_users(self):
         with open(DATA_DIR + 'random.json') as f:
+            data = json.load(f)
+        return data
+
+    def get_all_users(self):
+        with open(DATA_DIR + 'all.json') as f:
             data = json.load(f)
         return data
 
