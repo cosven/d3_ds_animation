@@ -1,5 +1,6 @@
-import os
 import json
+import os
+import random
 
 from flask import Blueprint, request
 from flask_restful import Api, Resource
@@ -16,8 +17,9 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), '../datas/')
 class User(Resource):
     def get(self, uid):
         try:
-            f_path = DATA_DIR + 'speech_log－' + uid + '.xls'
-            data = xls_to_json(f_path)
+            f_path = DATA_DIR + uid + '.json'
+            with open(f_path) as f:
+                data = json.load(f)
         except:
             data = {}
         return {'uid': uid,
@@ -26,8 +28,8 @@ class User(Resource):
 
 class Users(Resource):
     def get(self):
-        random = request.args.get('random')
-        if random:
+        a_random = request.args.get('random')
+        if a_random:
             return self.get_random_users()
         range_arg = request.args.get('choices')
         if range_arg == 'all':
@@ -46,12 +48,19 @@ class Users(Resource):
         return result
 
     def get_random_users(self):
-        with open(DATA_DIR + 'random.json') as f:
-            data = json.load(f)
-        return data
+        all_data = self.get_all_users()
+        uids = list(all_data.keys())
+        result = {}
+        for i in range(0, 20):
+            uid = random.choice(uids)
+            uids.remove(uid)
+            if (len(all_data[uid]) == 0):
+                continue
+            result[uid] = all_data[uid]
+        return result
 
     def get_all_users(self):
-        with open(DATA_DIR + 'all.json') as f:
+        with open(DATA_DIR + 'all.json.bak') as f:
             data = json.load(f)
         return data
 
@@ -59,7 +68,7 @@ class Users(Resource):
 class UserList(Resource):
     def get(self):
         fs = os.listdir(DATA_DIR)
-        return [x[-16:-4] for x in fs if x.endswith('.xls')]
+        return [x[:-5] for x in fs if x.endswith('.json')]
 
 
 api.add_resource(User, '/user/<uid>')

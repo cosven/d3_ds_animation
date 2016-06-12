@@ -7,3 +7,4 @@ assert/
 *.json
 *.pyc
 .vim-bookmarks
+*.bak

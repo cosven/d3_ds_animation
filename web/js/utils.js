@@ -150,7 +150,7 @@ export let get_kind = (d) => {
                 type = kinds[9];
                 break;
             default:
-                console.error('cant recogonize kind %s', d.module);
+                console.warn('cant recogonize kind %s', d.module);
                 break;
         }
   }
